@@ -153,8 +153,108 @@ static int __map_open_create(Map *map)
     return 0;
 }
 
-/* map_get_data: Return an address of the data if success return a null address otheriwse */
-const void *map_get_data(Map *map, const void *key)
+
+/* map_rep: Return "0" if success replacing the data tracked by the key return -1 otherwise */
+int map_rep(Map *map, const void *key, const void *new_data)
+{
+    uint8_t *package;
+    Sat sat, sat_zeros;
+    size_t index, pos;
+    
+    if (map == NULL || key == NULL || new_data == NULL)
+        return -1;
+    
+    memset(&sat_zeros, 0, sizeof(Sat));
+    
+    /* Map the index and fetch the structure */
+    index = map->hash(key) % map->max_num_cells;
+
+
+    if (lseek(map->fd, sizeof(Sat) * index + sizeof(size_t) * 4, SEEK_SET) == -1)
+        return -1;
+
+    if (read(map->fd, &sat, sizeof(Sat)) != sizeof(Sat))
+         return -1;
+
+    /* Check if the cell exist if is zero, it doesn't exist */
+    if (memcmp(&sat_zeros, &sat, sizeof(Sat)) == 0)
+        return -1;
+
+     /* Fetch the package by the buffer gived by sat component */
+    if ((package = (uint8_t *) sat_get_data(&sat, key,
+                                            (int (*)(const uint8_t *, const uint8_t *))
+                                            &__map_compare_package)) == NULL)
+        return -1;
+
+
+    /* Get the position of data */
+    memcpy(&pos, package, sizeof(size_t));
+
+    if (dat_rep(&map->dat, pos, new_data) == -1)
+        return -1;
+
+    return 0;
+}   
+    
+/* map_rem: Return "0" if success removing or deleting data return -1 otherwise */
+int map_rem(Map *map, const void *key)
+{
+    uint8_t *package;
+    Sat sat, sat_zeros;
+    size_t index, pos;
+    
+    if (map == NULL || key == NULL)
+        return -1;
+
+    memset(&sat_zeros, 0, sizeof(Sat));
+    
+    /* Map the index and fetch the structure */
+    index = map->hash(key) % map->max_num_cells;
+
+    if (lseek(map->fd, sizeof(Sat) * index + sizeof(size_t) * 4, SEEK_SET) == -1)
+        return -1;
+
+    if (read(map->fd, &sat, sizeof(Sat)) != sizeof(Sat))
+         return -1;
+
+    /* Check if the cell exist if is zero, it doesn't exist */
+    if (memcmp(&sat_zeros, &sat, sizeof(Sat)) == 0)
+        return -1;
+
+     /* Fetch the package by the buffer gived by sat component */
+    if ((package = (uint8_t *) sat_get_data(&sat, key,
+                                            (int (*)(const uint8_t *, const uint8_t *))
+                                            &__map_compare_package)) == NULL)
+        return -1;
+
+    /* Get the position of data */
+    memcpy(&pos, package, sizeof(size_t));
+
+    /* Delete the data from the data file*/
+    if (dat_rem(&map->dat, pos) == -1)
+        return -1;
+
+    /* Remove the rell */
+    if (sat_rem(&sat, key, &__map_compare_package) == -1)
+        return -1;
+
+    /* Overwrite the cell if it is zero */
+    if (sat.size == 0) {
+        memcpy(&sat, &sat_zeros, sizeof(Sat));
+        
+        if (lseek(map->fd, sizeof(Sat) * index + sizeof(size_t) * 4, SEEK_SET) == -1)
+            return -1;
+        
+        if (write(map->fd, &sat, sizeof(Sat)) != sizeof(Sat))
+            return -1;
+    }
+    
+    return 0;
+}
+
+
+/* map_get: Return an address of the data if success return a null address otheriwse */
+const void *map_get(Map *map, const void *key)
 {
     uint8_t *package, *data;
     size_t pos, index;

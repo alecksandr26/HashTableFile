@@ -10,10 +10,14 @@
 
 typedef struct {
     int fd;
-    size_t num_data, size_data;
+    size_t num_data, data_size;
     char file_name[FILE_NAME_LEN];
     uint8_t *buff;
 } Dat;
+
+
+/* dat_rep: Return "0" if success replacing the data return -1 otherwise */
+int dat_rep(Dat *dat, size_t pos, const uint8_t *new_data);
 
 /* dat_rem: Return "0" if success removing data return -1 otherwise */
 int dat_rem(Dat *dat, const size_t pos);
@@ -26,7 +30,7 @@ const uint8_t *dat_get(Dat *dat, const size_t pos);
 int dat_append(Dat *dat, const uint8_t *data_to_append);
 
 /* dat_const: Return "0" if success opening the dat file return -1 otherwise */
-int dat_const(Dat *dat, const char *file_name, size_t size_data);
+int dat_const(Dat *dat, const char *file_name, size_t data_size);
 
 /* dat_dest: Return "0" if success closing the dat file return -1 otherwise */
 int dat_dest(Dat *dat);

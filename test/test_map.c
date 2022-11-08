@@ -24,6 +24,49 @@ int hash(const int *num)
 
 /* TESTCASES */
 
+
+void TESTCASE_rem_rep_get_consults()
+{
+    Map *map;
+    
+    char map_file_name[FILE_NAME_LEN];
+    char sat_file_name[FILE_NAME_LEN];
+    char dat_file_name[FILE_NAME_LEN];
+
+    const int num1 = 1;
+    const int num2 = 2;
+    const int num3 = 3;
+
+
+    /* Copy the names */
+    strcpy(map_file_name, MAP_FILE_NAME);
+    strcpy(dat_file_name, DAT_FILE_NAME);
+    strcpy(sat_file_name, SAT_FILE_NAME);
+
+    map = alloc_map();
+
+    map_const(map, sizeof(int), sizeof(int), map_file_name, dat_file_name, sat_file_name, 10,
+              (int (*)(const void *)) &hash);
+
+    map_ins(map, &num1, &num1);
+    map_ins(map, &num2, &num2);
+
+    assert(map_rem(map, &num1) == 0);
+    assert(map_get(map, &num1) == NULL);
+
+    map_ins(map, &num1, &num1);
+    
+    assert(*((int *) map_get(map, &num1)) == num1);
+    
+    assert(map_rep(map, &num1, &num3) == 0);
+    
+    assert(*((int *) map_get(map, &num1)) == num3);
+    
+    map_dest(map);
+    dealloc_map(map);
+}
+
+
 void TESTCASE_ins_get_consults()
 {
     Map *map;
@@ -48,8 +91,8 @@ void TESTCASE_ins_get_consults()
     map_ins(map, &num1, &num1);
     map_ins(map, &num2, &num2);
 
-    assert(*((int *) map_get_data(map, &num1)) == num1);
-    assert(*((int *) map_get_data(map, &num2)) == num2);
+    assert(*((int *) map_get(map, &num1)) == num1);
+    assert(*((int *) map_get(map, &num2)) == num2);
     
     map_dest(map);
     dealloc_map(map);
@@ -113,7 +156,11 @@ int main()
     remove(MAP_FILE_NAME);
     remove(SAT_FILE_NAME);
     remove(DAT_FILE_NAME);
-    
+
+    TESTCASE_rem_rep_get_consults();
+    remove(MAP_FILE_NAME);
+    remove(SAT_FILE_NAME);
+    remove(DAT_FILE_NAME);
     
     return 0;
 }

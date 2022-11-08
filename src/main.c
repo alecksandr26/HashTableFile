@@ -148,13 +148,21 @@ int main()
             assert(map_ins(map, &user, user.id) == 0 && "Error adding a new user");
             break;
         case DEL:
+            printf("Pon el id: ");
+            scanf("%[^\n]%*c", id);
+            assert(map_rem(map, id) == 0);
             break;
         case UP:
+            printf("Pon el id: ");
+            scanf("%[^\n]%*c", id);
+            capture_new_user(&user);
+            memcpy(user.id, id, LEN_ID);
+            assert(map_rep(map, id, &user) == 0);
             break;
         case SEARCH:
             printf("Pon el id: ");
             scanf("%[^\n]%*c", id);
-            assert((user_ptr = (User *) map_get_data(map, id)) != NULL && "Error Key doens't find it");
+            assert((user_ptr = (User *) map_get(map, id)) != NULL && "Error Key doens't find it");
             print_user(user_ptr);
             tapo();
             break;
