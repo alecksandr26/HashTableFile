@@ -34,7 +34,7 @@ typedef struct map_t {
     int (*hash)(const void *key);
 } Map;
 
-#define __map_content_size(map) ((map)->key_size + sizeof(size_t))
+#define __map_package_size(map) ((map)->key_size + sizeof(size_t))
 
 /* TODOOOO: Make it dynamic it should scale taking more and more space */
 
@@ -79,9 +79,9 @@ static int __map_read_headers(Map *map)
     return 0;
 }
 
-/* __compare_package_function: Return "0" if the key from the package and the recived key are equal,
+/* __map_compare_package: Return "0" if the key from the package and the recived key are equal,
    otherwise return -1 */
-static int __compare_package_function(const uint8_t *key, const uint8_t *package)
+static int __map_compare_package(const uint8_t *key, const uint8_t *package)
 {
     assert(key != NULL && package != NULL && "Key and Map shouldn't be Null");
 
@@ -178,12 +178,16 @@ const void *map_get_data(Map *map, const void *key)
     if (memcmp(&sat_zeros, &sat, sizeof(Sat)) == 0)
         return NULL;
 
+    /* Alloc memory for the buffer */
+    if (sat_set_data_size(&sat, __map_package_size(map)) == -1)
+        return NULL;
+
     /* TODOOOOO: Refactor this shitty if statement */
     
     /* Fetch the package by the buffer gived by sat component */
     if ((package = (uint8_t *) sat_get_data(&sat, key,
                                             (int (*)(const uint8_t *, const uint8_t *))
-                                            &__compare_package_function)) == NULL)
+                                            &__map_compare_package)) == NULL)
         return NULL;
 
     /* Get the position of data */
@@ -201,7 +205,7 @@ int map_ins(Map *map, const void *data, const void *key)
 {
     size_t index;
     Sat sat_zeros, sat;
-    uint8_t package[__map_content_size(map)];
+    uint8_t package[__map_package_size(map)];
     
     if (map == NULL || data == NULL || key == NULL)
         return -1;
@@ -222,7 +226,7 @@ int map_ins(Map *map, const void *data, const void *key)
         return -1;
     
     if (memcmp(&sat_zeros, &sat, sizeof(Sat)) == 0)    /* This cell is empty */
-        if (sat_const(&sat, __map_content_size(map)) == -1)
+        if (sat_const(&sat, __map_package_size(map)) == -1)
             return -1;
     
     if (sat_app(&sat, package) == -1)

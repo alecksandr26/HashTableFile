@@ -202,6 +202,23 @@ int sat_size(Sat *sat)
     return sat->size;
 }
 
+/* sat_set_data_size: Return "0" if success setting a size to the data return -1 otherwise */
+int sat_set_data_size(Sat *sat, const size_t new_data_size)
+{
+    if (sat == NULL)
+        return -1;
+
+    sat->data_size = new_data_size;
+    
+    /* If data is equal to NULL try to alloc the necessary memory */
+    if (DATA == NULL && (DATA = malloc(new_data_size)) == NULL)
+        return -1;
+    else if ((DATA = realloc(DATA, new_data_size)) == NULL)
+        return -1;
+
+    return 0;
+}
+
 
 /* sat_get_tail: Return an address of the data if success getting thedata of the head
    return null address otherwise*/

@@ -33,6 +33,7 @@ void TESTCASE_ins_get_consults()
     char dat_file_name[FILE_NAME_LEN];
 
     const int num1 = 1;
+    const int num2 = 2;
 
     /* Copy the names */
     strcpy(map_file_name, MAP_FILE_NAME);
@@ -44,8 +45,11 @@ void TESTCASE_ins_get_consults()
     map_const(map, sizeof(int), sizeof(int), map_file_name, dat_file_name, sat_file_name, 10,
               (int (*)(const void *)) &hash);
 
+    map_ins(map, &num1, &num1);
+    map_ins(map, &num2, &num2);
 
-    assert(map_ins(map, &num1, &num1) == 0);
+    assert(*((int *) map_get_data(map, &num1)) == num1);
+    assert(*((int *) map_get_data(map, &num2)) == num2);
     
     map_dest(map);
     dealloc_map(map);

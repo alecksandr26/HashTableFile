@@ -54,7 +54,6 @@ int hash(const char *key)
     return sum;
 }
 
-
 /* TODOO: Change the input methods for more secure  in c */
 
 /* generate_id: Generates a new id for the user */
@@ -155,7 +154,7 @@ int main()
         case SEARCH:
             printf("Pon el id: ");
             scanf("%[^\n]%*c", id);
-            // assert((user_ptr = (User *) map_get_data(map, id)) != NULL && "Error Key doens't find it");
+            assert((user_ptr = (User *) map_get_data(map, id)) != NULL && "Error Key doens't find it");
             print_user(user_ptr);
             tapo();
             break;

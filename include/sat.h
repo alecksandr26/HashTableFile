@@ -12,6 +12,9 @@ typedef struct sat_t {
 /* sat_size: Return the size of the linked list if success getting the size  return -1 otherwise  */
 int sat_size(Sat *sat);
 
+/* sat_set_data_size: Return "0" if success setting a size to the data return -1 otherwise */
+int sat_set_data_size(Sat *sat, const size_t new_data_size);
+
 /* sat_get_tail: Return an address of the data if success getting thedata of the head
    return null address otherwise*/
 const uint8_t *sat_get_tail(Sat *sat);
