@@ -11,8 +11,6 @@
 #define SAT_FILE_NAME "sat.bin"
 #define DAT_FILE_NAME "dat.bin"
 
-
-
 /* The hash function */
 
 int hash(const int *num)
@@ -21,10 +19,12 @@ int hash(const int *num)
 }
 
 
+/* TODOOOOO: Rewrite the tests */
+
+
 /* TESTCASES */
 
-
-void TESTCASE_ins_consults()
+void TESTCASE_ins_get_consults()
 {
     Map *map;
     
@@ -105,7 +105,7 @@ int main()
     remove(SAT_FILE_NAME);
     remove(DAT_FILE_NAME);
 
-    TESTCASE_ins_consults();
+    TESTCASE_ins_get_consults();
     remove(MAP_FILE_NAME);
     remove(SAT_FILE_NAME);
     remove(DAT_FILE_NAME);

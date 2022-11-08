@@ -8,7 +8,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 
-/* Include the lib */
+/* Include the components */
 #include "../include/sat.h"
 #include "../include/dat.h"
 #include "../include/map.h"
@@ -28,7 +28,6 @@ typedef struct map_t {
     size_t num_keys, max_num_cells, data_size, key_size;
     int fd;
     char file_name[FILE_NAME_LEN];
-    uint8_t *data;
     
     /* Create the objects */
     Dat dat;
@@ -37,12 +36,13 @@ typedef struct map_t {
 
 #define __map_content_size(map) ((map)->key_size + sizeof(size_t))
 
-/* Make it dynamic it should scale taking more and more space */
+/* TODOOOO: Make it dynamic it should scale taking more and more space */
+
 
 /* __map_write_headers: Return "0" if success wwritting the headers return -1 otherwise */
 static int __map_write_headers(Map *map)
 {
-    assert(map != NULL && "map should'nt be null address");
+    assert(map != NULL && "map shouldn't be null address");
     
     if (write(map->fd, &map->num_keys, sizeof(size_t)) != sizeof(size_t))
         return -1;
@@ -62,7 +62,7 @@ static int __map_write_headers(Map *map)
 /* __map_read_headers: Return "0" if success reading the headers return -1 otherwise */
 static int __map_read_headers(Map *map)
 {
-    assert(map != NULL && "map should'nt be null address");
+    assert(map != NULL && "map shouldn't be null address");
     
     if (read(map->fd, &map->num_keys, sizeof(size_t)) != sizeof(size_t))
         return -1;
@@ -79,11 +79,23 @@ static int __map_read_headers(Map *map)
     return 0;
 }
 
+/* __compare_package_function: Return "0" if the key from the package and the recived key are equal,
+   otherwise return -1 */
+static int __compare_package_function(const uint8_t *key, const uint8_t *package)
+{
+    assert(key != NULL && package != NULL && "Key and Map shouldn't be Null");
+
+    /* TODOOOO: Change this shitty function */
+    if (strcmp((const char *) key, (const char *) package + sizeof(size_t)) != 0)
+        return -1;
+
+    return 0;
+}
 
 /* __map_alloc_space: Return "0" if success allocing new space in the file return -1 otherwise */
 static int __map_alloc_space(Map *map)
 {
-    assert(map != NULL && "map should'nt be null address");
+    assert(map != NULL && "map shouldn't be null address");
     size_t i;
     Sat sat;
 
@@ -141,20 +153,47 @@ static int __map_open_create(Map *map)
     return 0;
 }
 
-
 /* map_get_data: Return an address of the data if success return a null address otheriwse */
 const void *map_get_data(Map *map, const void *key)
 {
-    uint8_t package[__map_content_size(map)];
-    size_t pos;
-
+    uint8_t *package, *data;
+    size_t pos, index;
+    Sat sat, sat_zeros;
     
     if (map == NULL || key == NULL)
         return NULL;
-    
 
+    memset(&sat_zeros, 0, sizeof(Sat));
     
-    return map->data;
+    /* Map the index and fetch the structure */
+    index = map->hash(key) % map->max_num_cells;
+
+    if (lseek(map->fd, sizeof(Sat) * index + sizeof(size_t) * 4, SEEK_SET) == -1)
+        return NULL;
+
+    if (read(map->fd, &sat, sizeof(Sat)) != sizeof(Sat))
+         return NULL;
+
+    /* Check if the cell exist if is zero, it doesn't exist */
+    if (memcmp(&sat_zeros, &sat, sizeof(Sat)) == 0)
+        return NULL;
+
+    /* TODOOOOO: Refactor this shitty if statement */
+    
+    /* Fetch the package by the buffer gived by sat component */
+    if ((package = (uint8_t *) sat_get_data(&sat, key,
+                                            (int (*)(const uint8_t *, const uint8_t *))
+                                            &__compare_package_function)) == NULL)
+        return NULL;
+
+    /* Get the position of data */
+    memcpy(&pos, package, sizeof(size_t));
+
+    /* Get the data from the file */
+    if ((data = (uint8_t *) dat_get(&map->dat, pos)) == NULL)
+        return NULL;
+    
+    return data;
 }
 
 /* map_ins: Return "0" if success inserting data in the map return -1 otherwise */
@@ -229,10 +268,6 @@ int map_const(Map *map, size_t data_size, size_t key_size,
     map->hash = hash;
     map->num_keys = 0;
     map->key_size = key_size;
-
-    /* Alloc a simple buffer */
-    if ((map->data = (uint8_t *) malloc(data_size)) == NULL)
-        return -1;
     
     /* Open the file */
     if (__map_open_create(map) == -1)
@@ -258,8 +293,6 @@ int map_dest(Map *map)
     /* Close the file */
     if (close_saturation_file() == -1)
         return -1;
-
-    free(map->data);
     
     return 0;
 }

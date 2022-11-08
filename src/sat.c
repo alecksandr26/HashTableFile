@@ -103,7 +103,7 @@ static int __sat_set_next_cell(Sat *sat, size_t pos, int next_pos)
 /* __sat_get_tail: Return "0" if success getting the tail cell return -1 otherwise */
 static int __sat_get_tail(Sat *sat, Cell *cell, uint8_t *buff)
 {
-    assert(sat != NULL && cell != NULL && buff != NULL && "sat and cell should'nt be null values");
+    assert(sat != NULL && cell != NULL && buff != NULL && "sat and cell shouldn't be null values");
 
     if (lseek(FD, __size_cell(sat) * sat->tail + sizeof(size_t), SEEK_SET) == -1)
         return -1;
@@ -120,7 +120,7 @@ static int __sat_get_tail(Sat *sat, Cell *cell, uint8_t *buff)
 /* __sat_get_head: Return "0" if success getting the head cell return -1 otherwise */
 static int __sat_get_head(Sat *sat, Cell *cell, uint8_t *buff)
 {
-    assert(sat != NULL && cell != NULL && buff != NULL && "sat and cell should'nt be null values");
+    assert(sat != NULL && cell != NULL && buff != NULL && "sat and cell shouldn't be null values");
 
     if (lseek(FD, __size_cell(sat) * sat->head + sizeof(size_t), SEEK_SET) == -1)
         return -1;
@@ -137,7 +137,7 @@ static int __sat_get_head(Sat *sat, Cell *cell, uint8_t *buff)
 /* __sat_app_new_cell: Return "0" If success adding a new cell in the file return -1 otherwise */
 static int __sat_app_new_cell(Sat *sat, Cell *new_cell, const uint8_t *data)
 {
-    assert(sat != NULL && new_cell != NULL && data != NULL && "sat, cell, data should'nt be null values");
+    assert(sat != NULL && new_cell != NULL && data != NULL && "sat, cell, data shouldn't be null values");
     
     /* First close the file */
     if (close(FD) == -1)
@@ -171,7 +171,7 @@ static int __sat_app_new_cell(Sat *sat, Cell *new_cell, const uint8_t *data)
 /* __sat_overwrite_cell: Return "0" if success overwritting the cell return -1 otherwise */
 static int __sat_overwrite_cell(Sat *sat, size_t pos, Cell *update_cell)
 {
-    assert(sat != NULL && update_cell != NULL && "sat cell should'nt be null values");
+    assert(sat != NULL && update_cell != NULL && "sat cell shouldn't be null values");
 
     if (lseek(FD, __size_cell(sat) * pos + sizeof(size_t), SEEK_SET) == -1)
         return -1;
@@ -235,7 +235,8 @@ const uint8_t *sat_get_head(Sat *sat)
     return DATA;
 }
 
-/* sat_get_data: Return an address of the data if success, otherwise return NULL address */
+/* sat_get_data: Return an address of the data if success, otherwise return NULL address
+   compare_data: Return "0" if the data are equal return -1 otherwise */
 const uint8_t *sat_get_data(Sat *sat, const uint8_t *data_to_cmp,
                             int (*compare_data)(const uint8_t *data1, const uint8_t *data2))
 {
@@ -250,7 +251,7 @@ const uint8_t *sat_get_data(Sat *sat, const uint8_t *data_to_cmp,
     }
 
     do {
-        if (compare_data(DATA, data_to_cmp) == 0)
+        if (compare_data(data_to_cmp, DATA) == 0)
             return DATA;
     } while (__sat_next_cell(sat, &cell, DATA) != -1);
 
@@ -325,7 +326,8 @@ int sat_rem(Sat *sat, const uint8_t *data_to_rem,
     return 0;
 }
 
-/* sat_is_in: Return 1 if the data exist in the list else return 0 return -1 otherwise */
+/* sat_is_in: Return 1 if the data exist in the list else return 0 return -1 otherwise
+   compare_data: Return "0" if the data are equal return -1 otherwise */
 int sat_is_in(Sat *sat, const uint8_t *data,
               int (*compare_data)(const uint8_t *data1, const uint8_t *data2))
 {
@@ -341,7 +343,7 @@ int sat_is_in(Sat *sat, const uint8_t *data,
     }
 
     do {
-        if (compare_data(buff, data) == 0)
+        if (compare_data(data, buff) == 0)
             return 1;
     } while (__sat_next_cell(sat, &cell, buff) != -1);
 
@@ -411,7 +413,8 @@ int sat_dest(Sat *sat)
     return 0;
 }
 
-/* open_saturation_file: Return "0" if success creating or openning a new staturation file return -1 otherwise */
+/* open_saturation_file: Return "0" if success creating or openning a new staturation file
+   return -1 otherwise */
 int open_saturation_file(const char *file_name)
 {
     /* Copy the memory */
