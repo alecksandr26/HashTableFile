@@ -3,14 +3,17 @@
 #include <unistd.h>
 #include <stdint.h>
 
+
 #include "../include/sat.h"
 
 #define SAT_FILE_NAME "sat.bin"
+
 
 int compare_int(const int *int1, const int *int2)
 {
     return !(*int1 == *int2);
 }
+
 
 /* TESTCASES */
 

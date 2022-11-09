@@ -41,7 +41,6 @@ run: $(BIN)
 	@echo [Running: $(BIN)]
 	@./$(BIN)
 
-
 $(TESTDIR)/%.out: $(TESTDIR)/%.c $(OBJS_TEST)
 	@echo [Linking: $< $(OBJS_TEST) -o $@]
 	@$(C) $(C_FLAGS) $< $(OBJS_TEST) -o $@
@@ -54,7 +53,7 @@ test: $(TESTS)
 
 clean:
 	@echo [Deleting: $(OBJS) $(TESTS) $(BIN)]
-	@rm $(OBJS) $(TESTS) $(BIN) 
+	@rm $(OBJS) $(TESTS) $(BIN)
 
 
 

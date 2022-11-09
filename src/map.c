@@ -301,7 +301,7 @@ const void *map_get(Map *map, const void *key)
 }
 
 /* map_ins: Return "0" if success inserting data in the map return -1 otherwise */
-int map_ins(Map *map, const void *data, const void *key)
+int map_ins(Map *map, const void *key, const void *data)
 {
     size_t index;
     Sat sat_zeros, sat;
