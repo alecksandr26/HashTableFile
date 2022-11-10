@@ -145,7 +145,7 @@ int main()
         case ADD:
             capture_new_user(&user);
             generate_id(&user);
-            assert(map_ins(map, &user, user.id) == 0 && "Error adding a new user");
+            assert(map_ins(map, user.id, &user) == 0 && "Error adding a new user");
             break;
         case DEL:
             printf("Pon el id: ");

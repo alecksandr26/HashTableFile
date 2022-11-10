@@ -238,16 +238,15 @@ int map_rem(Map *map, const void *key)
     if (sat_rem(&sat, key, &__map_compare_package) == -1)
         return -1;
 
-    /* Overwrite the cell if it is zero */
-    if (sat.size == 0) {
+    /* Save the new state of the cell */
+    if (sat.size == 0)
         memcpy(&sat, &sat_zeros, sizeof(Sat));
         
-        if (lseek(map->fd, sizeof(Sat) * index + sizeof(size_t) * 4, SEEK_SET) == -1)
-            return -1;
+    if (lseek(map->fd, sizeof(Sat) * index + sizeof(size_t) * 4, SEEK_SET) == -1)
+        return -1;
         
-        if (write(map->fd, &sat, sizeof(Sat)) != sizeof(Sat))
-            return -1;
-    }
+    if (write(map->fd, &sat, sizeof(Sat)) != sizeof(Sat))
+        return -1;
     
     return 0;
 }
